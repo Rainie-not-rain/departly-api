@@ -35,3 +35,9 @@ test('链接加正文，抓取失败后使用正文',async()=>{const service=fro
 test('只有链接，失败进入正文降级',async()=>{const service=frontService(async()=>{throw Error('quota')});await assert.rejects(service.prepareGuide(url),{code:'CONTENT_RESOLVE_FAILED'})})
 test('分享标题不误判为正文',async()=>{const service=frontService(async()=>{throw Error('quota')});await assert.rejects(service.prepareGuide('74【福州攻略】\n'+url))})
 test('纯正文不发抓取请求',async()=>{const service=frontService(async()=>{throw Error('should not call')});assert.equal((await service.prepareGuide(body)).text,body.trim())})
+
+const exportedUrl='https://www.xiaohongshu.com/discovery/item/6ab534f9000000001802e544?source=webshare&xhsshare=pc_web&xsec_token=fixture-token=&xsec_source=pc_share';
+const exportedShare='57 【 爱吃卤肉饭 | 小红书 - 你的生活兴趣社区】 😆 fixture-code 😆 '+exportedUrl+'】';
+test('后端整段分享文案提取 URL 并保留全部参数',()=>{const out=normalizeSourceUrl(exportedShare);assert.equal(out.originalUrl,exportedUrl);assert.equal(out.sourceId,'6ab534f9000000001802e544')});
+test('前端完整分享文案及直接 resolveUrl 都提取干净链接',async()=>{let calls=0;const service=frontService(async q=>{calls++;assert.equal(q.data.url,exportedUrl);return {success:true,data:content}});await service.prepareGuide(exportedShare);await service.resolveUrl(exportedShare);assert.equal(calls,2)});
+test('分享链接紧邻表情不包含表情与括号',()=>{const service=frontService(()=>{});assert.equal(service.urlParts('【'+exportedUrl+'😆】').urls[0],exportedUrl);assert.equal(normalizeSourceUrl('【'+exportedUrl+'😆】').originalUrl,exportedUrl)});
