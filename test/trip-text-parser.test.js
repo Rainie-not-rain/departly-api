@@ -10,10 +10,10 @@ test('小红书地点介绍不重复提取、不吞入路线',()=>{const result=
 test('单独美食、住宿推荐不进入路线',()=>assert.deepEqual(names(parseExplicitItinerary('Day1：三坊七巷 ➡ 西湖公园\n\n美食打卡：\n海顶记\n天然居\n阿信鲜捞\n住宿推荐\n东街口附近')),[['三坊七巷','西湖公园']]))
 test('自由叙事返回 null',()=>{assert.equal(parseExplicitItinerary('第一天早上先去清水寺，\n然后沿着二年坂慢慢走，\n下午再去伏见稻荷。'),null);assert.equal(parseExplicitItinerary('Day1：早上先去清水寺，然后走二年坂'),null)})
 for(const title of ['Day1','Day 1','day1','DAY1','第1天','第一天','第二天','第三天'])test('识别标题 '+title,()=>assert.equal(parseExplicitItinerary(title+'：鼓山 → 烟台山').days[0].items.length,2))
-for(const delimiter of ['➡','➡️','➠','→','>','＞','-','—','、','，',';'])test('识别分隔符 '+delimiter,()=>assert.deepEqual(names(parseExplicitItinerary('Day1：鼓山 '+delimiter+' 烟台山')),[['鼓山','烟台山']]))
+for(const delimiter of ['➡','➡️','➠','→','>','＞','、','，',';'])test('识别分隔符 '+delimiter,()=>assert.deepEqual(names(parseExplicitItinerary('Day1：鼓山 '+delimiter+' 烟台山')),[['鼓山','烟台山']]))
 test('轻量清洗前缀，保留 S湾 原名和跨城市地点',()=>{const text='Day1：✔️ 三坊七巷 ➡ 🔸 童话小镇S湾';const result=parseExplicitItinerary(text);assert.deepEqual(names(result),[['三坊七巷','童话小镇S湾']]);assert.equal(normalizeResult(result,validateInput({text,city:'福州'},'parse'),'parse').days[0].items.length,2)})
 test('换行箭头续接，同一行下一 Day 不吞入',()=>{assert.deepEqual(names(parseExplicitItinerary('Day1：鼓山 ➡\n烟台山 ➡ 上下杭\nDay2：龙王头 → 仙人井')),[['鼓山','烟台山','上下杭'],['龙王头','仙人井']]);assert.deepEqual(names(parseExplicitItinerary('Day1：鼓山 → 烟台山 Day2：龙王头 → 仙人井')),[['鼓山','烟台山'],['龙王头','仙人井']])})
-test('不静默丢弃不能解析的 Day',()=>assert.equal(parseExplicitItinerary('Day1：鼓山 → 烟台山\nDay2：下午再去未知景点。'),null))
+test('已解析Day保留，无法确定的Day为空',()=>assert.deepEqual(names(parseExplicitItinerary('Day1：鼓山 → 烟台山\nDay2：下午再去未知景点。')),[['鼓山','烟台山'],[]]))
 const full='Day1：三坊七巷 ➡ 林则徐纪念馆 ➡ 西湖公园 ➡ 福建省博物馆 ➡ 西禅古寺 ➡ 福道\nDay2：鼓山 ➡ 烟台山 ➡ 中洲岛 ➡ 青年广场 ➡ 上下杭 ➡ 闽江夜游\nDay3：白沙公园 ➡ 风车森林公园 ➡ 北部湾 ➡ 童话小镇S湾 ➡ 猫头墘 ➡ 和平村\nDay4：龙王头 ➡ 仙人井 ➡ 北港文创村 ➡ 最美环岛路 ➡ 镜沙 ➡ 长江澳'
 test('福州平潭四天24地点，handler不调用 GLM',async()=>{const fetch=global.fetch,log=console.log,logs=[];let calls=0;global.fetch=async()=>{calls++;throw Error('must not call')};console.log=(...args)=>logs.push(args);try{const response={status(n){this.statusCode=n;return this},json(body){this.body=body},setHeader(){}};await handler({method:'POST',body:{text:full,city:'福州',startDate:'2026-10-03'}},response);assert.equal(response.statusCode,200);assert.equal(response.body.success,true);assert.deepEqual(response.body.data.days.map(day=>day.items.length),[6,6,6,6]);assert.deepEqual(names(response.body.data),names(parseExplicitItinerary(full)));assert.equal(calls,0);assert(logs.some(row=>row[0]==='[trip-parse strategy]'&&row[1]==='deterministic'));assert(logs.some(row=>row[0]==='[trip-parse deterministic count]'&&row[1]===24))}finally{global.fetch=fetch;console.log=log}})
 
@@ -27,10 +27,28 @@ const beijing='Day1️⃣ 天安门🇨🇳→人民大会堂→国家博物馆\
 const beijingExpected=[['天安门广场','人民大会堂','中国国家博物馆'],['故宫','景山公园'],['颐和园','圆明园遗址'],['八达岭长城','南锣鼓巷、鼓楼','什刹海'],['天坛公园','鼓楼'],['环球影城'],[]];
 test('真实北京七天：编号优先、单景点、返程为空，共13地点',()=>{const result=parseExplicitItinerary(beijing);assert.deepEqual(names(result),beijingExpected);assert.equal(result.days.flatMap(day=>day.items).length,13);assert.deepEqual(names(normalizeResult(result,validateInput({text:beijing},'parse'),'parse')),beijingExpected)});
 test('无冒号和装饰 emoji 不改变文字数字',()=>assert.deepEqual(names(parseExplicitItinerary('Day1️⃣798艺术区🎢→三里屯SOHO🏯→童话小镇S湾🦋')),[['798艺术区','三里屯SOHO','童话小镇S湾']]));
-test('圈号只取标题，并保留复合原名',()=>assert.deepEqual(names(parseExplicitItinerary('Day1：天安门 → 国家博物馆\n①天安门广场：城市地标\n介绍文字\n②中国国家博物馆\n③南锣鼓巷、鼓楼')),[['天安门广场','中国国家博物馆','南锣鼓巷、鼓楼']]));
+test('圈号只取标题，并保留复合原名',()=>assert.deepEqual(names(parseExplicitItinerary('Day1：天安门 → 国家博物馆\n①天安门广场：城市地标\n介绍文字\n②中国国家博物馆\n③南锣鼓巷、鼓楼')),[['天安门广场','中国国家博物馆']]));
 test('仅同Day去重，跨Day重复保留',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 天安门→天安门\nDay2 天安门')),[['天安门'],['天安门']]));
 test('常见数字编号优先',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 天安门→国家博物馆\n1.天安门广场\n2、中国国家博物馆')),[['天安门广场','中国国家博物馆']]));
 test('纯活动 Day 保留空数组',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 故宫\nDay2 返程\nDay3 自由活动\nDay4 酒店入住')),[['故宫'],[],[],[]]));
-test('仅活动整份攻略仍报空结果',()=>{const text='Day1 收拾返程\nDay2 逛街采购';assert.throws(()=>normalizeResult(parseExplicitItinerary(text),validateInput({text},'parse'),'parse'),{code:'AI_EMPTY_RESULT'})});
+test('仅活动整份攻略仍报空结果',()=>{const text='Day1 收拾返程\nDay2 逛街采购';assert.throws(()=>normalizeResult({days:[{dayIndex:1,items:[]},{dayIndex:2,items:[]}]},validateInput({text},'parse'),'parse'),{code:'AI_EMPTY_RESULT'})});
 test('推荐合集内编号不进入 itinerary',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 鼓山→烟台山\n美食推荐\n①海顶记\n②天然居')),[['鼓山','烟台山']]));
 test('北京 handler 返回7天13地点，不调用 GLM',async()=>{const oldFetch=global.fetch,oldLog=console.log,logs=[];let called=0;global.fetch=async()=>{called++;throw Error('must not call')};console.log=(...args)=>logs.push(args);try{const response={status(n){this.statusCode=n;return this},json(body){this.body=body},setHeader(){}};await handler({method:'POST',body:{text:beijing,startDate:'2026-10-03'}},response);assert.equal(response.statusCode,200);assert.deepEqual(names(response.body.data),beijingExpected);assert.equal(called,0);assert(logs.some(x=>x[0]==='[trip-parse deterministic count]'&&x[1]===13));assert(logs.some(x=>x[0]==='[trip-parse strategy]'&&x[1]==='deterministic'));assert(logs.some(x=>x[0]==='[trip-text-parser numbered]'))}finally{global.fetch=oldFetch;console.log=oldLog}});
+
+const multiCases=[
+ ['义乌','Day1 义乌站➡️国际商贸城➡️云西漫·私房菜➡️1970文创园➡️鸡鸣阁➡️三挺路夜市\nDay2 义乌天地/绿地朝阳门➡️韩国街➡️彪哥美食➡️义乌站返程',[['国际商贸城','云西漫·私房菜','1970文创园','鸡鸣阁','三挺路夜市'],['义乌天地/绿地朝阳门','韩国街','彪哥美食']]],
+ ['西安','Day1\n✅住宿：钟楼附近\n✅妆造：小唐风妆造\n1️⃣回民街\n2️⃣吃完去做汉服妆造\n3️⃣西安城墙\n4️⃣西安SKP\n5️⃣钟楼\n6️⃣大唐不夜城\nDay2\n2️⃣妆造\n2️⃣大雁塔\n3️⃣晚上坐高铁去洛阳',[['回民街','西安城墙','西安SKP','钟楼','大唐不夜城'],['大雁塔']]],
+ ['婺源','DAY1｜婺源站→婺女洲日+夜游\n金阁、抱玉塔是经典景观\nDAY2｜篁岭→上坦→龙尾→三眼桥→汪口观景台\nDAY3｜石城→菊径→漳村→月亮湾→婺源站',[['婺女洲日+夜游'],['篁岭','上坦','龙尾','三眼桥','汪口观景台'],['石城','菊径','漳村','月亮湾']]],
+ ['重庆','Day1️⃣：解放碑→山城步道→十八梯→白象居→湖广会馆→来福士→洪崖洞→江滩公园\nDay2️⃣：鹅岭公园→鹅岭二厂→李子坝→三峡博物馆→人民大礼堂→观音桥→北仓文创街区→九街夜市',[['解放碑','山城步道','十八梯','白象居','湖广会馆','来福士','洪崖洞','江滩公园'],['鹅岭公园','鹅岭二厂','李子坝','三峡博物馆','人民大礼堂','观音桥','北仓文创街区','九街夜市']]],
+ ['江西D标记','📅 D3｜望仙谷→篁岭→月亮湾/汪口竹筏→住婺源\n📅 D4 | 陶溪川→制陶DIY→返程',[['望仙谷','篁岭','月亮湾/汪口竹筏'],['陶溪川','制陶DIY']]],
+ ['江西显式行程','Day1️⃣：落地—南昌一日游\n✅行程：南昌站➡️八一广场附近酒店➡️八一起义纪念馆➡️南昌之星摩天轮➡️秋水广场➡️滕王阁➡️吃饭\nDay3️⃣：景德镇市区\n✅行程：租电动车➡️抚州弄吃午饭➡️中国陶瓷博物馆➡️陶阳新村夜市➡️吃本地特色菜\nDay4️⃣：景德镇市区\n✅行程：租电动车➡️雕塑瓷厂➡️三宝村➡️御窑博物馆➡️陶溪川文创园➡️吃小碗菜',[['八一起义纪念馆','南昌之星摩天轮','秋水广场','滕王阁'],['抚州弄','中国陶瓷博物馆','陶阳新村夜市'],['雕塑瓷厂','三宝村','御窑博物馆','陶溪川文创园']]]
+];
+for(const [label,text,expected] of multiCases)test('多策略 '+label+' 正确且handler不调用GLM',async()=>{const result=parseExplicitItinerary(text);assert.deepEqual(names(result),expected);const previousFetch=global.fetch,previousLog=console.log;let called=0;global.fetch=async()=>{called++;throw Error('must not call')};console.log=()=>{};try{const response={status(n){this.statusCode=n;return this},json(body){this.body=body},setHeader(){}};await handler({method:'POST',body:{text}},response);assert.equal(response.body.success,true);assert.deepEqual(names(response.body.data),expected);assert.equal(called,0);assert(!('parseMeta' in response.body.data))}finally{global.fetch=previousFetch;console.log=previousLog}});
+for(const label of ['行程','路线','游玩路线','打卡路线','今日行程','今日路线'])test('显式标签优先 '+label,()=>assert.deepEqual(names(parseExplicitItinerary('Day1：主题介绍\n📍'+label+'：故宫→景山公园 住宿：酒店\n①别的地点')),[['故宫','景山公园']]));
+test('描述编号不会扩充明确路线',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 南昌站→三清山→望仙谷\n①东方女神\n②巨蟒出山')),[['三清山','望仙谷']]));
+test('横线时长不拆，活动日不触发整份LLM',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 鼓山→休息5-10分钟→烟台山\nDay2 收拾行李')),[['鼓山','烟台山'],[]]));
+test('普通横线不是默认路线分隔符',()=>assert.deepEqual(names(parseExplicitItinerary('Day1 A-B→C/D')),[['A-B','C/D']]));
+test('parseMeta检测天数与有效天数不同',()=>{const result=parseExplicitItinerary('D 1：鼓山→烟台山\nD 2：自由活动');assert.deepEqual(result.parseMeta,{strategy:'deterministic',detectedDays:2,parsedDays:1,itemCount:2})});
+
+test('江西四天跨城路线过滤上下文确定的集合住宿城市',()=>{const text='📅 D1｜南昌集合→市区自由活动→住南昌\n📅 D2｜南昌→三清山→望仙谷日夜游\n📅 D3｜望仙谷→篁岭→月亮湾/汪口竹筏→住婺源\n📅 D4｜婺源→景德镇→陶溪川→制陶DIY→返程';assert.deepEqual(names(parseExplicitItinerary(text)),[[],['三清山','望仙谷日夜游'],['望仙谷','篁岭','月亮湾/汪口竹筏'],['景德镇','陶溪川','制陶DIY']])});
+test('前文城市被提到不代表必须过滤，单城市景点不猜测',()=>assert.deepEqual(names(parseExplicitItinerary('D1｜南昌→三清山')),[['南昌','三清山']]));
