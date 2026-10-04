@@ -8,6 +8,9 @@
     },
     "api/content/resolve.js": {
       "maxDuration": 30
+    },
+    "api/ai/chat.js": {
+      "maxDuration": 45
     }
   }
 }
