@@ -1,0 +1,9 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import {suggestTimeSlots} from '../lib/trip-schedule.js'
+import handler from '../api/ai/trip-parse.js'
+test('API真实链路中纯路线的每个节点都有时间段',async()=>{const fetch=global.fetch;global.fetch=async()=>{throw Error('should not call GLM')};try{const response={status(n){this.code=n;return this},json(body){this.body=body},setHeader(){}};await handler({method:'POST',body:{text:'Day1：鼓山→烟台山→上下杭\nDay2：三坊七巷→西湖公园'}},response);assert.equal(response.body.success,true);for(const day of response.body.data.days)for(const item of day.items){assert.match(item.plannedStartTime,/^\d{2}:\d{2}$/);assert.match(item.plannedEndTime,/^\d{2}:\d{2}$/);assert(item.plannedStartTime<item.plannedEndTime);assert.equal(item.startTimeSource,'suggested')}}finally{global.fetch=fetch}});
+test('密集节点可压缩系统建议时长，不再整天留空',()=>{const rows=suggestTimeSlots(Array.from({length:20},()=>({durationMinutes:90,durationSource:'suggested'})));assert(rows.every(x=>x.plannedStartTime&&x.plannedEndTime&&x.plannedEndTime<='21:00'));for(let i=1;i<rows.length;i++)assert(rows[i].plannedStartTime>rows[i-1].plannedEndTime)});
+test('原文时间和时长保留',()=>{const rows=suggestTimeSlots([{durationMinutes:150,durationSource:'source'},{plannedStartTime:'14:00',plannedEndTime:'16:00',startTimeSource:'source',durationMinutes:120,durationSource:'source'}]);assert.equal(rows[0].durationMinutes,150);assert.equal(rows[0].durationSource,'source');assert.equal(rows[1].plannedStartTime,'14:00');assert.equal(rows[1].plannedEndTime,'16:00')});
+test('空Day不产生虚构节点',()=>assert.deepEqual(suggestTimeSlots([]),[]));
+test('排不开原文时间时保留空值，不伪造冲突日程',()=>{const rows=suggestTimeSlots([{}, {plannedStartTime:'09:10',plannedEndTime:'10:00',startTimeSource:'source'}]);assert.equal(rows[0].plannedStartTime,undefined);assert.equal(rows[1].plannedStartTime,'09:10')});
