@@ -1,0 +1,8 @@
+.confirmation-dialog{position:fixed;inset:0;margin:auto;padding:0;width:calc(min(100vw,430px) - 48px);max-width:none;max-height:85svh;border:0;border-radius:var(--radius-sheet,20px);background:var(--surface,#FFFCF5);color:var(--text,#19352C);overflow:auto;box-shadow:0 8px 32px #19352C24}
+.confirmation-dialog::backdrop{background:#19352C66}
+.confirmation-copy{padding:28px 24px}
+.confirmation-copy h2{text-align:center;font-size:18px;font-weight:650;line-height:1.5}
+.confirmation-copy p{margin:16px 0 0;text-align:center;color:var(--text-secondary,#66756D);font-size:14px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-line}
+.confirmation-actions{display:flex;gap:12px;padding:0 24px 24px}
+.confirmation-actions button{flex:1;min-width:0;min-height:44px;border-radius:var(--radius-control,12px);background:var(--sage,#E4E9DD);font-size:15px;font-weight:600}
+.confirmation-actions button+button{background:var(--accent,#215C45);color:white}

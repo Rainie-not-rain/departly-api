@@ -1,0 +1,2 @@
+import TripDetail from "../trip-detail";
+export default async function TripPage({ params,searchParams }: { params: Promise<{ tripId: string }>;searchParams:Promise<{day?:string}> }) { const { tripId } = await params;const {day}=await searchParams;return <TripDetail key={tripId} tripId={tripId} initialDay={day!==undefined&&Number.isFinite(Number(day))?Math.max(0,Math.floor(Number(day))):null} />; }

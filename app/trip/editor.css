@@ -1,0 +1,33 @@
+.itinerary-editor{padding-bottom:calc(190 * var(--rpx) + env(safe-area-inset-bottom));}
+.itinerary-editor .heading{margin:calc(28 * var(--rpx)) 0 calc(22 * var(--rpx));display:flex;flex-wrap:wrap;gap:calc(8 * var(--rpx)) calc(20 * var(--rpx));font-size:calc(25 * var(--rpx));line-height:1.5;}
+.itinerary-editor .heading .muted{font-size:calc(24 * var(--rpx));}
+.itinerary-editor .day-tabs{margin-bottom:calc(24 * var(--rpx));}
+.itinerary-editor .day-tabs .pill{margin-right:calc(12 * var(--rpx));}
+.itinerary-editor .node{padding:calc(8 * var(--rpx)) 0 calc(50 * var(--rpx));}
+.itinerary-editor .node:before{left:calc(-40 * var(--rpx));top:calc(12 * var(--rpx));}
+.itinerary-editor .node:after{left:calc(-28 * var(--rpx));top:calc(38 * var(--rpx));bottom:0;display:block;}
+.itinerary-editor .node-title{font-weight:750;margin:calc(10 * var(--rpx)) 0;}
+.itinerary-editor .node-edit{display:block;width:100%;text-align:left;background:transparent;padding:0;border-radius:0;}
+.itinerary-editor .node-edit>span{display:block;}
+.itinerary-editor .node-edit .muted{margin-top:calc(8 * var(--rpx));line-height:1.5;}
+.itinerary-editor .node.add{display:block;background:transparent;border-radius:0;color:#215C45;font-weight:700;text-align:left;width:100%;}
+.itinerary-editor .node-remove{position:absolute;right:0;top:0;background:transparent;color:#66756D;padding:0 8px;}
+.itinerary-editor .day-remove{background:transparent;color:#66756D;margin-right:calc(12 * var(--rpx));padding:0 4px;}
+.itinerary-editor .draft-basic{margin:calc(28 * var(--rpx)) 0;padding:calc(28 * var(--rpx));}
+.itinerary-editor .basic-hint{display:block;font-size:calc(24 * var(--rpx));color:#66756D;line-height:1.5;margin-bottom:calc(24 * var(--rpx));}
+.itinerary-editor .basic-field{display:block;min-width:0;margin-top:calc(20 * var(--rpx));}
+.itinerary-editor .field-label{display:block;font-size:calc(26 * var(--rpx));font-weight:650;margin-bottom:calc(12 * var(--rpx));}
+.itinerary-editor .draft-basic .input{height:calc(88 * var(--rpx));padding:0 calc(20 * var(--rpx));font-size:calc(28 * var(--rpx));}
+.trip-detail .fixed-actions{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,430px);z-index:80;padding:calc(20 * var(--rpx)) calc(24 * var(--rpx)) calc(20 * var(--rpx) + env(safe-area-inset-bottom));background:#FFFCF5;display:flex;gap:calc(20 * var(--rpx));}
+.trip-detail .fixed-actions button{flex:1;min-width:0;font-size:calc(28 * var(--rpx));}
+.trip-detail .form-card{display:block;background:#FFFCF5;padding:calc(28 * var(--rpx));border-radius:calc(28 * var(--rpx));margin-bottom:calc(20 * var(--rpx));}
+.node-editor{padding-bottom:calc(190 * var(--rpx) + env(safe-area-inset-bottom));}
+.node-editor .header{margin-bottom:calc(42 * var(--rpx));}
+.node-editor .grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(20 * var(--rpx));}
+.node-editor .tags{display:flex;flex-wrap:wrap;gap:calc(12 * var(--rpx));}
+.node-editor .textarea{height:calc(180 * var(--rpx));resize:vertical;}
+.trip-detail .editor-error{color:#A14B3B;white-space:pre-wrap;margin:calc(20 * var(--rpx)) 0;}
+
+.itinerary-editor .fixed-actions{flex-direction:column;gap:10px}.editor-submit-buttons{display:flex;gap:12px;width:100%}.editor-submit-error{color:#A14B3B;font-size:14px;line-height:1.5;margin:0;max-height:80px;overflow:auto}
+
+.itinerary-editor:has(.editor-submit-error){padding-bottom:calc(190 * var(--rpx) + 90px + env(safe-area-inset-bottom))}

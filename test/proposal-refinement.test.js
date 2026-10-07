@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {buildTripContext} from '../lib/trip-context.js';
+import {contextVersion,executeTripAction,validateTripActionProposal} from '../lib/trip-actions.js';
+import {pendingProposalContexts,refinePendingProposal,findAvailableSlot} from '../lib/proposal-refinement.js';
+import {normalizeCopilotResponse,copilotInput} from '../lib/copilot.js';
+const trip={id:'t',members:[],days:[{id:'a',nodes:[{id:'park',place:'奥林匹克公园',start:'15:30',end:'17:30'}]},{id:'b',nodes:[{id:'garden',place:'圆明园',start:'14:00',end:'16:00'}]}]};
+const context=buildTripContext(trip),p={id:'old',type:'move_item',itemId:'park',fromDayId:'a',toDayId:'b',proposedStartTime:'14:00',status:'pending',contextVersion:contextVersion(context)};
+const pending=()=>pendingProposalContexts([p],context);
+const refine=q=>refinePendingProposal(context,pending(),q,()=> 'new');
+test('valid pending context includes true conflicts and excludes processed/stale proposals',()=>{assert.equal(pending()[0].conflicts[0].title,'圆明园');for(const status of ['applied','invalid','dismissed','superseded'])assert.deepEqual(pendingProposalContexts([{...p,status}],context),[]);assert.equal(copilotInput({tripContext:context,messages:[{role:'user',content:'晚一点'}],pendingProposalContext:p}).pending.length,1);});
+test('refinement finds deterministic slot without changing Trip; confirmation executes only new proposal',()=>{const before=JSON.stringify(trip),r=refine('换个不冲突的时间');assert.equal(r.proposals[0].proposedStartTime,'16:00');assert.equal(r.supersedesProposalId,'old');assert.equal(JSON.stringify(trip),before);assert.throws(()=>executeTripAction(trip,{...p,status:'superseded'}));const saved=executeTripAction(trip,r.proposals[0]);assert.equal(saved.trip.days[1].nodes.find(n=>n.id==='park').start,'16:00');assert.match(saved.reply,/已经移到 Day 2/);assert.equal(JSON.parse(JSON.stringify(saved.trip)).days[1].nodes.length,2);});
+test('explicit four pm wins; overlaps remain warnings without rearranging others',()=>{const c=structuredClone(context);c.days[1].items[0].endTime='17:00';const old={...p,contextVersion:contextVersion(c)},rows=pendingProposalContexts([old],c);const r=refinePendingProposal(c,rows,'改到下午四点',()=> 'new');assert.equal(r.proposals[0].proposedStartTime,'16:00');assert.equal(validateTripActionProposal(r.proposals[0],c).warnings.length,1);assert.equal(c.days[1].items[0].startTime,'14:00');});
+test('later refinement, absent or multiple pending clarify safely',()=>{assert.equal(refine('晚一点').proposals[0].proposedStartTime,'14:30');assert.equal(refinePendingProposal(context,[],'晚一点',()=> 'x').proposals.length,0);assert.match(refinePendingProposal(context,[...pending(),...pending()],'晚一点',()=> 'x').reply,/哪一条/);});
+test('full period returns no slot and no actions',()=>{const c=structuredClone(context);c.days[1].items[0].startTime='12:00';c.days[1].items[0].endTime='18:00';assert.equal(findAvailableSlot({day:c.days[1],durationMinutes:120,period:'afternoon'}),null);const r=refinePendingProposal(c,pendingProposalContexts([{...p,contextVersion:contextVersion(c)}],c),'换个不冲突的时间',()=> 'x');assert.match(r.reply,/没有完整/);assert.deepEqual(r.proposals,[]);});
+test('pending model claims are replaced with confirmation language',()=>{const r=normalizeCopilotResponse({reply:'已经移动成功',proposals:[p]},context,'把奥林匹克公园移到第二天',()=> 'id');assert.doesNotMatch(r.reply,/已经/);assert.match(r.reply,/确认/);});
+
+test('explicit named update without pending keeps existing Phase 2 action path',()=>{assert.equal(refinePendingProposal(context,[],'奥林匹克公园改到下午四点',()=> 'x'),null);const r=normalizeCopilotResponse({reply:'已经调整好了',proposals:[]},context,'调整时间',()=> 'x');assert.doesNotMatch(r.reply,/已经调整/);});

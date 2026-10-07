@@ -1,0 +1,43 @@
+.journeys{padding-bottom:calc(calc(180 * var(--rpx)) + env(safe-area-inset-bottom))}
+.journeys .header{height:calc(88 * var(--rpx));margin-bottom:calc(32 * var(--rpx))}.journeys .header .page-title{font-size:calc(52 * var(--rpx));font-weight:800;line-height:1.2}.journeys .block{display:block}.journeys .section-title{margin:calc(32 * var(--rpx)) 0 calc(24 * var(--rpx))}
+.journeys .trip-scroll{white-space:nowrap;padding-bottom:calc(16 * var(--rpx))}.journeys .trip-mini{display:inline-flex;vertical-align:top;width:calc(330 * var(--rpx));margin-right:calc(16 * var(--rpx));flex-direction:column;padding:0;overflow:hidden}.journeys .trip-mini:last-child{margin-right:0}
+.journeys .cover{display:block;width:100%;height:calc(170 * var(--rpx));flex-shrink:0;background:#DCE7CE}.journeys .trip-mini-copy{padding:calc(20 * var(--rpx)) calc(20 * var(--rpx)) calc(24 * var(--rpx));white-space:normal}.journeys .mini-title-row{display:flex;align-items:center;gap:calc(12 * var(--rpx));margin-bottom:calc(12 * var(--rpx))}
+.journeys .journey-name{display:block;min-width:0;font-size:calc(28 * var(--rpx));line-height:1.5;overflow-wrap:break-word}.journeys .mini-title-row .journey-name{flex:1}.journeys .trip-mini-arrow{flex:none;font-size:calc(40 * var(--rpx));line-height:1;color:#456056}.journeys .trip-mini .muted{display:block;font-size:calc(24 * var(--rpx));line-height:1.5;color:#66756D}
+.journeys .past{display:grid;grid-template-columns:calc(168 * var(--rpx)) minmax(0,1fr) calc(24 * var(--rpx));align-items:center;gap:calc(20 * var(--rpx));margin-bottom:calc(16 * var(--rpx));padding:0 calc(20 * var(--rpx)) 0 0;overflow:hidden;min-height:calc(168 * var(--rpx))}.journeys .past .cover{width:calc(168 * var(--rpx));height:100%;min-height:calc(168 * var(--rpx))}.journeys .past-copy{min-width:0;padding:calc(20 * var(--rpx)) 0}.journeys .past-copy .muted{display:block;margin-top:calc(12 * var(--rpx));font-size:calc(24 * var(--rpx));line-height:1.5}.journeys .past>span{font-size:calc(40 * var(--rpx));color:#456056}
+.journeys .active-trip{min-height:calc(220 * var(--rpx));margin-bottom:calc(16 * var(--rpx));padding:0;display:grid;grid-template-columns:calc(168 * var(--rpx)) minmax(0,1fr);overflow:hidden}.journeys .active-cover{display:block;width:calc(168 * var(--rpx));height:100%;min-height:calc(220 * var(--rpx));background:#DCE7CE}.journeys .active-info{padding:calc(24 * var(--rpx));min-width:0}.journeys .active-head{display:flex;align-items:center;flex-wrap:wrap;gap:calc(12 * var(--rpx))}.journeys .active-name{font-size:calc(30 * var(--rpx));line-height:1.5;font-weight:800;min-width:0;overflow-wrap:break-word}.journeys .country-tags{display:flex;flex-wrap:wrap;gap:calc(8 * var(--rpx))}.journeys .country-tag{padding:calc(4 * var(--rpx)) calc(10 * var(--rpx));border-radius:calc(999 * var(--rpx));background:#E4E9DD;color:#456056;font-size:calc(22 * var(--rpx))}.journeys .active-arrow{margin-left:auto;font-size:calc(40 * var(--rpx));line-height:1;color:#456056}.journeys .active-date{display:block;margin-top:calc(16 * var(--rpx));color:#66756D;font-size:calc(24 * var(--rpx));line-height:1.5}.journeys .prep-list{display:flex;flex-wrap:wrap;gap:calc(12 * var(--rpx)) calc(16 * var(--rpx));margin-top:calc(20 * var(--rpx))}.journeys .prep-item{display:flex;align-items:center;gap:calc(6 * var(--rpx));font-size:calc(24 * var(--rpx));line-height:1.5;white-space:nowrap}.journeys .prep-item.done{color:#215C45}.journeys .prep-item.pending{color:#956E10}
+.journeys .journey-empty{padding:calc(80 * var(--rpx)) 0;text-align:center}.journeys .journey-empty button{margin-top:calc(32 * var(--rpx))}
+
+.journeys .trip-add-fab{position:fixed;right:calc(32 * var(--rpx));bottom:calc(calc(40 * var(--rpx)) + env(safe-area-inset-bottom));z-index:20;width:calc(92 * var(--rpx))!important;min-width:calc(92 * var(--rpx))!important;height:calc(92 * var(--rpx));margin:0!important;padding:0;display:flex;align-items:center;justify-content:center;background:#215C45;color:white;border-radius:50%;font-size:calc(58 * var(--rpx));font-weight:700;line-height:1;box-shadow:0 calc(8 * var(--rpx)) calc(24 * var(--rpx)) #215C4540}.journeys .edit-mask{position:fixed;inset:0;z-index:50;background:#19352c66;display:flex;align-items:flex-end}.journeys .edit-sheet{width:100%;max-height:85vh;overflow-y:auto;padding:calc(32 * var(--rpx)) calc(32 * var(--rpx)) calc(calc(32 * var(--rpx)) + env(safe-area-inset-bottom));border-radius:calc(32 * var(--rpx)) calc(32 * var(--rpx)) 0 0;background:#FFFCF5}.journeys .edit-sheet .label{margin-top:calc(20 * var(--rpx))}.journeys .edit-dates{display:flex;gap:calc(12 * var(--rpx));margin-top:calc(20 * var(--rpx))}.journeys .edit-dates input{flex:1;min-width:0}.journeys .edit-cover{display:flex;align-items:center;justify-content:space-between;margin:calc(24 * var(--rpx)) 0}.journeys .edit-cover img{width:calc(160 * var(--rpx));height:calc(100 * var(--rpx));border-radius:calc(18 * var(--rpx))}.journeys .edit-members{padding:calc(20 * var(--rpx)) 0}.journeys .edit-actions{display:flex;gap:calc(20 * var(--rpx))}.journeys .edit-actions button{flex:1}
+
+
+
+.journeys .recycle-footer{text-align:center;margin:calc(40 * var(--rpx)) calc(100 * var(--rpx)) 0;color:#66756D;font-size:calc(25 * var(--rpx));padding:calc(20 * var(--rpx))}.journeys .trip-action-sheet{width:100%;background:#FFFCF5;border-radius:calc(32 * var(--rpx)) calc(32 * var(--rpx)) 0 0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom)}.journeys .trip-action-sheet>button{text-align:center;padding:calc(30 * var(--rpx)) calc(24 * var(--rpx));font-size:calc(30 * var(--rpx));border-bottom:calc(1 * var(--rpx)) solid #E7E3D9}.journeys .trip-action-edit{color:#215C45}.journeys .trip-action-delete{color:#B05C45}.journeys .trip-action-sheet .trip-action-cancel{border-top:calc(12 * var(--rpx)) solid #F7F4EC;border-bottom:0;color:#66756D}
+
+.journeys .trip-add-plus{position:relative;width:calc(36 * var(--rpx));height:calc(36 * var(--rpx));flex:none}.journeys .trip-add-plus::before,.journeys .trip-add-plus::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:calc(1 * var(--rpx))}.journeys .trip-add-plus::before{width:calc(36 * var(--rpx));height:calc(5 * var(--rpx))}.journeys .trip-add-plus::after{width:calc(5 * var(--rpx));height:calc(36 * var(--rpx))}
+
+.journeys.journeys-empty{display:flex;flex-direction:column;min-height:100vh}.journeys.journeys-empty .header{flex-shrink:0}.journeys.journeys-empty .journey-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(24 * var(--rpx)) 0}.journeys.journeys-empty .journey-empty button{width:calc(360 * var(--rpx));max-width:100%}.journeys.journeys-empty .journey-empty .recycle-footer{margin:calc(48 * var(--rpx)) 0 0;padding:0}
+
+.journeys .trip-scroll{overflow-x:auto; scrollbar-width:none;}
+.journeys img{object-fit:cover;}
+.journeys .trip-add-fab{right:max(calc(32 * var(--rpx)),calc((100vw - 430px)/2 + 32 * var(--rpx)));bottom:calc(40 * var(--rpx) + env(safe-area-inset-bottom));}
+.journeys .trip-action-sheet>button{display:block;width:100%;}
+.journeys .edit-mask{z-index:120;left:50%;right:auto;width:min(100%,430px);transform:translateX(-50%);}
+.journeys .trip-card-wrap{position:relative;}
+.journeys .trip-menu{position:absolute;right:calc(12 * var(--rpx));top:calc(10 * var(--rpx));width:calc(46 * var(--rpx));height:calc(46 * var(--rpx));border-radius:50%;background:rgba(255,252,245,.85);color:#66756D;font-size:calc(28 * var(--rpx));line-height:1;z-index:1;}
+.journeys .card-open{color:inherit;text-decoration:none;}
+.journeys .trip-mini-wrap{display:inline-block;vertical-align:top;width:calc(330 * var(--rpx));margin-right:calc(16 * var(--rpx));}
+.journeys .trip-mini-wrap:last-child{margin-right:0;}
+.journeys .trip-mini-wrap .trip-mini{width:100%;margin-right:0;}
+.journeys .edit-dates input{width:0;flex:1;min-width:0;}
+.journeys .edit-cover{width:100%;background:transparent;}
+.journeys .recycle-footer{display:block;background:transparent;}
+
+.journeys .journey-empty .primary{font-size:calc(30 * var(--rpx));margin-top:calc(32 * var(--rpx));width:calc(360 * var(--rpx));max-width:100%;}
+.journeys .edit-members{display:block;}
+
+/* 对齐原小程序按钮字号和编辑弹层，限制在旅程列表内。 */
+.journeys .edit-actions button{font-size:calc(30 * var(--rpx));min-width:0;}
+.journeys .edit-sheet .row>button{background:transparent;border-radius:0;padding:0;color:#66756D;}
+.journeys .edit-cover{padding:0;border-radius:0;font-size:inherit;}
+.journeys .trip-action-sheet>button{border-radius:0;background:#FFFCF5;}
+.journeys .trip-scroll>.muted{display:block;white-space:normal;}

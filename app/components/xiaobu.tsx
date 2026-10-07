@@ -1,0 +1,15 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import {useRouter,usePathname} from "next/navigation";
+export default function Xiaobu({ onUnavailable }: { onUnavailable: (name: string) => void }) {
+ const router=useRouter(),pathname=usePathname();
+ const area=useRef<HTMLDivElement>(null);
+ const [cat,setCat]=useState<{side:string;y:number;x?:number}|null>(null);
+ const [dragging,setDragging]=useState(false);
+ const drag=useRef<{x:number;y:number;top:number;left:number;moved:boolean}|null>(null);
+ const suppressCatClick=useRef(false);
+ useEffect(()=>{
+  try{const raw=localStorage.getItem("departly_assistant_position"),stored=raw?JSON.parse(raw):{},width=Math.min(window.innerWidth,430),size=width*124/750,maxY=Math.max(0,window.innerHeight-width*150/750-size);setCat({side:stored.side==="left"?"left":"right",y:Math.max(0,Math.min(maxY,typeof stored.y==="number"?stored.y:window.innerHeight*.48))})}catch(e){window.alert("无法读取小簿位置设置");console.error(e)}
+ },[]);
+ return <div className="assistant-area" ref={area}>{cat && <button className={`assistant-float ${dragging ? "dragging" : ""}`} aria-label="小簿" style={{ top: cat.y, left: cat.x ?? (cat.side === "left" ? 4 : "calc(100% - 124 * var(--rpx) - 4px)") }} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = { x: e.clientX, y: e.clientY, top: cat.y, left: e.currentTarget.getBoundingClientRect().left - (area.current?.getBoundingClientRect().left || 0), moved: false }; suppressCatClick.current = false; setDragging(false); }} onPointerMove={e => { const start = drag.current; if (!start) return; if (Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) > 8) start.moved = true; if (!start.moved) return; setDragging(true); const width = area.current?.clientWidth || 375; setCat({ x: Math.max(0, Math.min(width - width * 124 / 750, start.left + e.clientX - start.x)), side: e.clientX - (area.current?.getBoundingClientRect().left || 0) < width / 2 ? "left" : "right", y: Math.max(0, Math.min(window.innerHeight - width * 274 / 750, start.top + e.clientY - start.y)) }); }} onPointerUp={() => { const moved = drag.current?.moved; suppressCatClick.current = !!moved; drag.current = null; setDragging(false); if (moved) { setCat({ side: cat.side, y: cat.y }); try { localStorage.setItem("departly_assistant_position", JSON.stringify({ side: cat.side, y: cat.y })); } catch { window.alert("无法保存小簿位置"); } } }} onPointerCancel={() => { drag.current = null; setDragging(false); }} onClick={() => { if (!dragging && !suppressCatClick.current) router.push(/^\/trip\/[^/]+$/.test(pathname||"")?`${pathname}/copilot`:"/assistant"); }}><div className="assistant-bob"><div className="mascot-art">{dragging ? <><div className="mascot-piece mascot-tail"><img src="/images/departly/xiaobu.png" alt="" /></div><div className="mascot-piece mascot-upper"><img src="/images/departly/xiaobu.png" alt="" /></div><div className="mascot-piece mascot-lower"><img src="/images/departly/xiaobu.png" alt="" /></div></> : <img src="/images/departly/xiaobu.png" alt="" />}</div></div></button>}</div>;
+}

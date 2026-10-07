@@ -1,0 +1,6 @@
+import {createHmac} from 'node:crypto';
+process.env.WECHAT_APP_ID='fixture-app';process.env.WECHAT_APP_SECRET='fixture-secret';process.env.UPSTASH_REDIS_REST_URL='https://fixture-redis.example';process.env.UPSTASH_REDIS_REST_TOKEN='fixture-redis-token';
+export function signedRequest(){const payload=Buffer.from(JSON.stringify({sub:'fixture-user',exp:Math.floor(Date.now()/1000)+300})).toString('base64url');return {headers:{authorization:'Bearer '+payload+'.'+createHmac('sha256',process.env.WECHAT_APP_SECRET).update(payload).digest('base64url')}}}
+const wrapped=Symbol('security fixture fetch');let current=global.fetch;
+function wrap(fn){if(fn?.[wrapped])return fn;const proxy=async(url,options)=>{if(url==='https://fixture-redis.example')return {ok:true,json:async()=>({result:1})};if(String(url).includes('/cgi-bin/stable_token'))return {ok:true,json:async()=>({access_token:'fixture-wechat-token',expires_in:7200})};if(String(url).includes('/wxa/msg_sec_check'))return {ok:true,json:async()=>({errcode:0,result:{suggest:'pass'}})};return fn(url,options)};proxy[wrapped]=true;return proxy}
+current=wrap(current);Object.defineProperty(globalThis,'fetch',{configurable:true,get:()=>current,set:value=>{current=wrap(value)}});

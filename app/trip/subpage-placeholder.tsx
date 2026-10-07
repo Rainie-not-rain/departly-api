@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function TripSubpagePlaceholder({title,tripId}:{title:string;tripId:string}) {return <div className="web-frame"><main className="page top-space"><header className="row"><Link className="back" href={`/trip/${encodeURIComponent(tripId)}`} aria-label="返回行程">‹</Link><h1 className="page-title">{title}</h1></header><p className="muted placeholder-note">此页面尚未迁移。</p></main></div>;}

@@ -1,16 +1,40 @@
 {
   "functions": {
-    "api/ai/trip-plan.js": {
+    "pages/api/security/media.js": {
       "maxDuration": 45
     },
-    "api/ai/trip-parse.js": {
+    "pages/api/security/media-callback.js": {
       "maxDuration": 45
     },
-    "api/content/resolve.js": {
+    "pages/api/security/media-file.js": {
+      "maxDuration": 45
+    },
+    "pages/api/security/media-cleanup.js": {
+      "maxDuration": 60
+    },
+    "pages/api/ai/trip-plan.js": {
+      "maxDuration": 45
+    },
+    "pages/api/ai/trip-parse.js": {
+      "maxDuration": 45
+    },
+    "pages/api/ai/chat.js": {
+      "maxDuration": 45
+    },
+    "pages/api/ai/scrapbook-route.js": {
+      "maxDuration": 45
+    },
+    "pages/api/content/resolve.js": {
       "maxDuration": 30
-    },
-    "api/ai/chat.js": {
-      "maxDuration": 45
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/security/media-cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ],
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev"
 }

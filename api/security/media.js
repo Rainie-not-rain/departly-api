@@ -1,0 +1,4 @@
+import {authenticate,rateLimit} from '../../lib/api-security.js';
+import {submitMedia,mediaStatus,mediaRow,deleteMedia,commitMedia} from '../../lib/media-security.js';
+import {success,failure,apiError} from '../../lib/response.js';
+export default async function handler(req,res){res.setHeader('Cache-Control','no-store');try{const identity=authenticate(req);if(req.method==='POST'){if(req.body?.action==='commit')return success(res,await commitMedia(identity,req.body.id));await rateLimit(identity);return success(res,await submitMedia(identity,req.body?.base64))}if(req.method==='GET')return success(res,await mediaStatus(identity,req.query?.id));if(req.method==='DELETE'){const row=await mediaRow(req.body?.id);if(row&&row.owner!==identity.sub)throw apiError('UNAUTHORIZED','不能删除其他用户的照片',403);if(row)await deleteMedia(row);return success(res,{deleted:true})}throw apiError('METHOD_NOT_ALLOWED','请求方式不支持',405)}catch(error){return failure(res,error)}}

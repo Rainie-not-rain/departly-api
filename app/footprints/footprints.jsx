@@ -1,0 +1,23 @@
+"use client";
+import {useEffect,useRef,useState} from 'react';
+import Link from 'next/link';
+import BottomNavigation from '../components/bottom-navigation';
+import Xiaobu from '../components/xiaobu';
+import {getScrapbooks,getWeek,getCities} from '../../lib/footprints.js';
+import {useFootprints} from './shared';
+import MapChart from './map-chart';
+import {getMapModel} from '../../lib/footprint-map.js';
+import './map.css';
+export default function Footprints(){
+ const {data,error}=useFootprints(),[index,setIndex]=useState(0),swipe=useRef(null),suppressClick=useRef(false);
+ const books=data?getScrapbooks(data):[],week=data?getWeek(data):null,overview=data?getMapModel(data,{scope:'global',status:'visited'}).stats:null,cities=data?getCities(data).sort((a,b)=>String(b.lastVisitedAt).localeCompare(String(a.lastVisitedAt))).slice(0,6):[],model=data?getMapModel(data,{scope:'china',status:'visited'}):null;
+ useEffect(()=>setIndex(i=>Math.min(i,Math.max(0,books.length-1))),[books.length]);
+ const book=books[index],current=data?.trips?.find(t=>t.id===data.currentTripId&&!t.isDeleted)||data?.trips?.find(t=>!t.isDeleted),checkin=current?`/trip/${encodeURIComponent(current.id)}/checkin`:'/trip';
+ return <div className="web-frame footprints-page"><main className="page top-space footprint-page"><h1 className="footprint-title">旅行足迹</h1><p className="muted footprint-subtitle">把走过的风景，收进旅行记忆</p>{error&&<p role="alert" className="footprint-error">{error}</p>}{overview&&<>
+ <section className="card overview">{[[overview.ticketCount,'张票根'],[overview.cityCount,'个城市'],[overview.countryCount,'个国家']].map(([n,label])=><div key={label}><strong className="number">{n}</strong><span>{label}</span></div>)}</section>
+ <section className="card week"><div className="between"><div className="week-heading"><h2 className="section-title">本周足迹</h2><span className="week-badge">{week.ticketCount}</span></div><Link className="link" href="/footprints/calendar">查看详情 →</Link></div><div className="week-grid">{week.days.map(day=><Link key={day.date} href={`/footprints/day?date=${day.date}`} aria-label={`${day.date}${day.hasFootprint?' 有足迹':''}`}><span className="muted">{day.weekday}</span><span>{day.label}</span><i className={`dot ${day.hasFootprint?'lit':''}`}/></Link>)}</div>{!week.days.some(d=>d.hasFootprint)&&<p className="empty-copy">这一周还没有留下足迹</p>}</section>
+ <div className="between module-heading"><h2 className="section-title">我的手账</h2><span className="muted">{books.length} 本</span></div>
+ {book?<section className="card book-carousel"><div className="books" onClickCapture={e=>{if(suppressClick.current){e.preventDefault();e.stopPropagation();suppressClick.current=false;}}} onTouchStart={e=>{suppressClick.current=false;swipe.current=e.touches[0].clientX;}} onTouchEnd={e=>{if(swipe.current===null)return;const diff=e.changedTouches[0].clientX-swipe.current;swipe.current=null;if(Math.abs(diff)>40){suppressClick.current=true;setIndex(i=>Math.max(0,Math.min(books.length-1,i+(diff<0?1:-1))));}}}><Link className="book" href={`/footprints/book/${encodeURIComponent(book.tripId)}`}><div className="book-cover"><img src={book.coverPhoto} alt="手账封面"/><span className="cover-name">{book.title}</span><span className="cover-label">TRAVEL JOURNAL</span></div><strong className="book-title">{book.title}</strong><span className="book-meta">{book.startDate}—{book.endDate}</span><span className="book-meta">{book.ticketCount} 张票根</span></Link></div><div className="between"><button className="carousel-arrow" aria-label="上一本" disabled={index===0} onClick={()=>setIndex(i=>i-1)}>‹</button><span className="muted">{index+1} / {books.length}</span><button className="carousel-arrow" aria-label="下一本" disabled={index===books.length-1} onClick={()=>setIndex(i=>i+1)}>›</button></div></section>:<section className="card empty-copy"><span>还没有旅行手账</span><span>完成景点打卡并上传照片后，</span><span>你的旅行记忆会自动收进这里。</span><Link className="link" href={checkin}>去完成第一次景点打卡 →</Link></section>}
+ <div className="between module-heading"><h2 className="section-title">足迹地图</h2><Link className="link" href="/footprints/map">查看详情 →</Link></div><Link className="card map-preview" href="/footprints/map"><div className="map-thumbnail"><MapChart scope="china" status="visited" locations={model.locations} preview/></div><span>已点亮 {overview.countryCount>1?`${overview.countryCount} 个国家 · `:''}{overview.cityCount} 个城市</span><div className="city-tags">{cities.map(city=><span key={`${city.country}:${city.city}`}>{city.city}</span>)}</div>{!cities.length&&<span className="muted">完成第一次打卡后，城市会在这里点亮</span>}</Link>
+ </>}</main><BottomNavigation selected={4} onUnavailable={name=>window.alert(`暂时无法打开${name}，请稍后再试。`)}/><Xiaobu onUnavailable={()=>{}}/></div>;
+}

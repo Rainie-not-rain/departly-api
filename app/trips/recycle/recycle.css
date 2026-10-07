@@ -1,0 +1,10 @@
+.recycle-page{padding-bottom:calc(40 * var(--rpx) + env(safe-area-inset-bottom))}
+.recycle-page .recycle-note{display:block;font-size:calc(25 * var(--rpx));color:#66756D;line-height:1.7;margin:calc(28 * var(--rpx)) 0}
+.recycle-page .recycle-card{margin-top:calc(20 * var(--rpx))}
+.recycle-page .recycle-card>span,.recycle-page .recycle-name{display:block;line-height:1.6}
+.recycle-page .recycle-name{font-size:calc(34 * var(--rpx));font-weight:750}
+.recycle-page .recycle-card .muted{font-size:calc(24 * var(--rpx));margin-top:calc(10 * var(--rpx))}
+.recycle-page .recycle-expiry{font-size:calc(26 * var(--rpx));color:#215C45;margin-top:calc(18 * var(--rpx))}
+.recycle-page .recycle-actions{display:flex;gap:calc(20 * var(--rpx));margin-top:calc(24 * var(--rpx))}
+.recycle-page .recycle-actions button{flex:1;min-width:0;font-size:calc(27 * var(--rpx))}
+.recycle-page .recycle-empty{padding:calc(70 * var(--rpx)) calc(20 * var(--rpx));text-align:center;color:#66756D}
