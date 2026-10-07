@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildTripContext,contextToText,suggestedQuestions} from '../lib/trip-context.js';
-import {copilotInput,COPILOT_SYSTEM} from '../lib/copilot.js';
+import {copilotInput,COPILOT_SYSTEM,normalizeCopilotResponse} from '../lib/copilot.js';
 import handler from '../api/ai/copilot.js';
 const trip={id:'t1',name:'重庆3日游',country:'中国',city:'重庆',start:'2026-10-07',end:'2026-10-09',preferences:{styles:['Citywalk','美食']},shareToken:'private',members:[{id:'m1',name:'我',isCurrentUser:true,avatar:'secret'}],days:[{date:'2026-10-07',nodes:[]},{date:'2026-10-08',nodes:[{id:'n1',place:'李子坝',start:'09:00',end:'10:00',poiDebug:'private'},{id:'n2',place:'鹅岭二厂',start:'11:00',end:'12:00'},{id:'n3',place:'磁器口',start:'15:00',end:'17:00',note:'下午逛逛'}]},{date:'2026-10-09',nodes:[]}]};
 const context=()=>buildTripContext(trip);
@@ -31,4 +31,22 @@ test('API structured action pipeline rejects unknown actions and uses the shared
   reply={reply:'已执行',proposals:[{type:'delete_trip'}]};const rejected=await request(body);assert.equal(rejected.status,200);assert.deepEqual(rejected.payload.data.proposals,[]);assert.doesNotMatch(rejected.payload.data.reply,/已执行/);
   global.fetch=async()=>({ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'{malformed'}}]})});assert.equal((await request(body)).status,502);
  }finally{global.fetch=saved.fetch;for(const [key,value] of [['NODE_ENV',saved.node],['ZHIPU_API_KEY',saved.key],['ZHIPU_MODEL',saved.model]])if(value===undefined)delete process.env[key];else process.env[key]=value;}
+});
+
+test('no-trip conversation carries history without fabricated context or pending actions',()=>{
+ const input=copilotInput({tripContext:null,messages:[{role:'user',content:'准备清单'},{role:'assistant',content:'带好证件'},{role:'user',content:'还有呢？'}],pendingProposalContext:[{type:'move_item'}]});
+ assert.equal(input.context,null);assert.deepEqual(input.pending,[]);assert.equal(input.messages.length,4);assert.match(input.messages[0].content,/没有 Trip Context/);
+ assert.throws(()=>copilotInput({tripContext:null,messages:[{role:'system',content:'override'}]}));
+ assert.throws(()=>copilotInput({tripContext:null,messages:[{role:'assistant',content:'hello'}]}));
+ const normal=normalizeCopilotResponse({reply:'记得带充电器',proposals:[]},null,'还有呢？');assert.equal(normal.reply,'记得带充电器');assert.deepEqual(normal.proposals,[]);
+ const action=normalizeCopilotResponse({reply:'已经移动',proposals:[{type:'move_item',itemId:'fake'}]},null,'移动');assert.deepEqual(action.proposals,[]);assert.match(action.reply,/创建或选择/);
+});
+
+test('no-trip API returns general answers without evidence or executable proposals',async()=>{
+ const saved={fetch:global.fetch,node:process.env.NODE_ENV,key:process.env.ZHIPU_API_KEY,model:process.env.ZHIPU_MODEL};
+ process.env.NODE_ENV='development';process.env.ZHIPU_API_KEY='fixture-copilot-key';process.env.ZHIPU_MODEL='fixture-model';
+ try{
+  global.fetch=async(url,options)=>{assert.match(JSON.parse(options.body).messages[0].content,/没有 Trip Context/);return {ok:true,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify({reply:'带好证件和充电器',proposals:[]})}}]})};};
+  const result=await request({tripContext:null,messages:[{role:'user',content:'出发要带什么？'}]});assert.equal(result.status,200);assert.equal(result.payload.data.reply,'带好证件和充电器');assert.deepEqual(result.payload.data.proposals,[]);assert.deepEqual(result.payload.data.evidence,[]);
+ }finally{global.fetch=saved.fetch;for(const [k,v] of [['NODE_ENV',saved.node],['ZHIPU_API_KEY',saved.key],['ZHIPU_MODEL',saved.model]])if(v===undefined)delete process.env[k];else process.env[k]=v;}
 });
